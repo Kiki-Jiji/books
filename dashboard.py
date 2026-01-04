@@ -16,7 +16,6 @@ target_titles = list(books_groups['dreaming_devon'].values())
 first_book_title = books_groups['dreaming_devon'][1]
 
 # --- APP SETUP ---
-# Using the SLATE theme for a modern, dark professional look
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 
 app.layout = dbc.Container([
@@ -45,9 +44,7 @@ app.layout = dbc.Container([
         ], width=12)
     ], className="mb-4"),
 
-    # Charts Section
     dbc.Row([
-        # Chart 1: Units Sold
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader("Volume: Net Units Sold"),
@@ -55,7 +52,6 @@ app.layout = dbc.Container([
             ])
         ], md=6),
         
-        # Chart 2: Marginal Gains
         dbc.Col([
             dbc.Card([
                 dbc.CardHeader("Value: Marginal Gains per Unit"),
@@ -67,7 +63,6 @@ app.layout = dbc.Container([
     html.Footer("Sales Data Analysis Tool © 2024", className="text-center text-muted mt-5")
 ], fluid=True)
 
-# --- CALLBACK LOGIC ---
 @app.callback(
     [Output('units-sold-chart', 'figure'),
      Output('marginal-gains-chart', 'figure'),
@@ -76,11 +71,9 @@ app.layout = dbc.Container([
      Input('date-picker', 'end_date')]
 )
 def update_dashboard(start_date, end_date):
-    # Filter Data
     mask = (sales_raw['Royalty Date'] >= start_date) & (sales_raw['Royalty Date'] <= end_date)
     filtered_sales = sales_raw.loc[mask].copy()
     
-    # Calculate Logic
     books = filtered_sales[filtered_sales['Title'].isin(target_titles)]
     sold = books.groupby('Title')['Net Units Sold'].sum().to_dict()
     first_units = sold.get(first_book_title, 0)
@@ -106,7 +99,6 @@ def update_dashboard(start_date, end_date):
     # Styling for Charts
     template = "plotly_dark"
 
-    # Figure 1: Units Sold
     fig_units = px.bar(df_plot, x='Title', y='Units', 
                        color='Units', template=template,
                        color_continuous_scale='Blues')
