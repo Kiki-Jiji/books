@@ -1,9 +1,12 @@
 import dash
 import dash_bootstrap_components as dbc
-from dash import dcc, html, Input, Output
+from dash import dcc, html, Input, Output, callback
 import pandas as pd
 import plotly.express as px
 from functions import calulate_price, get_book_groups
+
+# Register this as the home page
+dash.register_page(__name__, path='/analysis')
 
 # --- DATA INITIALIZATION ---
 all_sheets = pd.read_excel('DATA.xlsx', sheet_name=None)
@@ -15,16 +18,8 @@ books_groups = get_book_groups()
 target_titles = list(books_groups['dreaming_devon'].values())
 first_book_title = books_groups['dreaming_devon'][1]
 
-# --- APP SETUP ---
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
-
-app.layout = dbc.Container([
-    # Header Section
-    dbc.Row([
-        dbc.Col(html.H1("Dreaming Devon: Sales Analytics", className="text-center text-primary mb-4"), width=12)
-    ], className="mt-4"),
-
-    # Filter Section
+# --- LAYOUT ---
+layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             dbc.Card([
@@ -34,16 +29,17 @@ app.layout = dbc.Container([
                         id='date-picker',
                         min_date_allowed=sales_raw['Royalty Date'].min(),
                         max_date_allowed=sales_raw['Royalty Date'].max(),
-                        start_date= pd.to_datetime("2025-01-01"),
+                        start_date=pd.to_datetime("2025-01-01"),
                         end_date=sales_raw['Royalty Date'].max(),
                         className="mb-3"
                     ),
                     html.Div(id='summary-stats', className="h3 text-success")
                 ])
-            ], color="light", outline=True)
+            ], color="secondary", outline=True) # Changed to secondary for better visibility in DARKLY
         ], width=12)
     ], className="mb-4"),
 
+    # Charts Section
     dbc.Row([
         dbc.Col([
             dbc.Card([
@@ -63,7 +59,8 @@ app.layout = dbc.Container([
     html.Footer("Sales Data Analysis Tool © 2026", className="text-center text-muted mt-5")
 ], fluid=True)
 
-@app.callback(
+# --- CALLBACK ---
+@callback(
     [Output('units-sold-chart', 'figure'),
      Output('marginal-gains-chart', 'figure'),
      Output('summary-stats', 'children')],
@@ -96,9 +93,9 @@ def update_dashboard(start_date, end_date):
 
     df_plot = pd.DataFrame(data_list)
 
-    # Styling for Charts
     template = "plotly_dark"
 
+    # Figure 1: Units Sold
     fig_units = px.bar(df_plot, x='Title', y='Units', 
                        color='Units', template=template,
                        color_continuous_scale='Blues')
@@ -113,6 +110,3 @@ def update_dashboard(start_date, end_date):
     summary_text = f"Total Marginal Gain: £{total_gain:.2f}"
     
     return fig_units, fig_gains, summary_text
-
-if __name__ == '__main__':
-    app.run(debug=True)

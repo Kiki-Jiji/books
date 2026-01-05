@@ -16,8 +16,25 @@ all_sheets = pd.read_excel('DATA.xlsx', sheet_name=None)
 
 Summary = all_sheets['Summary']
 
+
 sales = all_sheets['Combined Sales']
 
+books_groups['dreaming_devon'].values()
+
+series = sales[sales['Title'].isin(books_groups['dreaming_devon'].values())]
+
+[['Title', 'Royalty']].groupby('Title').cumsum()
+
+all_data = []
+for i in series['Title'].unique():
+    book_data = series[series['Title'] == i].sort_values('Royalty Date').reset_index(drop=True)
+
+    book_data['Royalty_cumsum'] = book_data['Royalty'].cumsum()
+    all_data.append(book_data)
+
+all_data = pd.concat(all_data)
+
+px.line(all_data, x ='Royalty Date', y = 'Royalty_cumsum', color='Title')
 
 prices = calulate_price(sales)
 
