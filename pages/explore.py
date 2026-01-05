@@ -28,6 +28,27 @@ all_data = pd.concat(all_data)
 
 fig = px.line(all_data, x ='Royalty Date', y = 'Royalty_cumsum', color='Title', template="plotly_dark")
 
+######################
+
+series['Royalty Date'] = pd.to_datetime(series['Royalty Date'])
+
+start = series['Royalty Date'].min()
+
+all_data = []
+for i in series['Title'].unique():
+    book_data = series[series['Title'] == i].sort_values('Royalty Date').reset_index(drop=True)
+
+    date_diff = book_data['Royalty Date'].min() - start
+
+    book_data['Royalty Date'] =  book_data['Royalty Date'] - date_diff
+
+    book_data['Royalty_cumsum'] = book_data['Royalty'].cumsum()
+    all_data.append(book_data)
+
+all_data = pd.concat(all_data)
+
+fig2 = px.line(all_data, x ='Royalty Date', y = 'Royalty_cumsum', color='Title', template="plotly_dark")
+
 
 
 layout = dbc.Container([
@@ -38,6 +59,7 @@ layout = dbc.Container([
 
     dbc.Row([
         dbc.Col([
+            dbc.CardBody([dcc.Graph(figure=fig2)]),
             dbc.CardBody([dcc.Graph(figure=fig)]),
         ])
     ])
